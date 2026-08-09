@@ -1,6 +1,7 @@
 import { Router } from "express";
 import Product from "../models/Product.js";
 import { requireAuth, requireAdmin } from "../middleware/auth.js";
+import { upload } from "../config/cloudinary.js"; // 1. Cloudinary upload import
 
 const router = Router();
 
@@ -18,14 +19,38 @@ router.get("/:id", async (req, res) => {
   res.json(product);
 });
 
-router.post("/", requireAuth, requireAdmin, async (req, res) => {
-  const product = await Product.create(req.body);
-  res.status(201).json(product);
+// POST - Naya Product add karne ke liye (Cloudinary image upload ke sath)
+router.post("/", requireAuth, requireAdmin, upload.single("image"), async (req, res) => {
+  try {
+    const productData = { ...req.body };
+
+    // Agar image file form se aayi hai toh Cloudinary URL assign ho jaye ga
+    if (req.file) {
+      productData.imageUrl = req.file.path;
+    }
+
+    const product = await Product.create(productData);
+    res.status(201).json(product);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
 
-router.put("/:id", requireAuth, requireAdmin, async (req, res) => {
-  const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
-  res.json(product);
+// PUT - Product update karne ke liye (Agar nayi image upload karein toh)
+router.put("/:id", requireAuth, requireAdmin, upload.single("image"), async (req, res) => {
+  try {
+    const updateData = { ...req.body };
+
+    // Agar nayi image upload ki gayi hai toh naya Cloudinary URL save hoga
+    if (req.file) {
+      updateData.imageUrl = req.file.path;
+    }
+
+    const product = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
 
 router.delete("/:id", requireAuth, requireAdmin, async (req, res) => {
