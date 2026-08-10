@@ -1,8 +1,5 @@
 import express from "express";
 import cors from "cors";
-import multer from "multer";
-import path from "path";
-import { fileURLToPath } from "url";
 
 import authRoutes from "./routes/authRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
@@ -11,30 +8,30 @@ import quickLinkRoutes from "./routes/quickLinkRoutes.js";
 import bankAccountRoutes from "./routes/bankAccountRoutes.js";
 import settingsRoutes from "./routes/settingsRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
+import { upload } from "./config/cloudinary.js";
 
 const app = express();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const uploadDir = path.join(__dirname, "uploads");
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => {
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    const ext = path.extname(file.originalname);
-    cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+const allowedOrigins = [];
+if (process.env.CLIENT_URL) allowedOrigins.push(process.env.CLIENT_URL);
+if (process.env.FRONTEND_URL) allowedOrigins.push(process.env.FRONTEND_URL);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS policy blocked request from origin ${origin}`));
   },
-});
-const upload = multer({ storage });
+  credentials: true,
+}));
 
-app.use("/uploads", express.static(uploadDir));
-app.use(cors({ origin: process.env.CLIENT_URL || "*" }));
 app.use(express.json());
 
 app.post("/api/uploads", upload.single("image"), (req, res) => {
   if (!req.file) return res.status(400).json({ message: "No image uploaded" });
-  const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
-  res.status(201).json({ url: imageUrl });
+  res.status(201).json({ url: req.file.path });
 });
 
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
