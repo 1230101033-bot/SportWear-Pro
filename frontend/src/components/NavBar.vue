@@ -1,7 +1,12 @@
 <template>
   <header class="bg-black text-white sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-      <router-link to="/" class="font-heading font-bold text-lg tracking-tight">SportWear Pro</router-link>
+      <router-link to="/" class="flex items-center gap-2">
+       <div class="h-10 w-10 rounded-full bg-white flex items-center justify-center overflow-hidden shrink-0">
+  <img src="/logo.png" alt="LeahSport" class="h-8 w-8 object-contain" />
+</div>
+        <span class="font-heading font-bold text-lg tracking-tight">LeahSport</span>
+      </router-link>
 
       <nav class="hidden md:flex items-center gap-6 text-sm">
         <router-link to="/" class="hover:text-gray-300 transition-colors">Home</router-link>
