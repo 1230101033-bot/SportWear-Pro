@@ -1,153 +1,154 @@
 <template>
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
-    <h1 class="font-heading text-2xl font-bold mb-6">Admin Panel</h1>
+  <div class="bg-brand-bg min-h-screen">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+      <h1 class="font-heading text-2xl font-bold mb-6 text-brand-text">Admin Panel</h1>
 
+      <div class="flex flex-wrap gap-2 mb-8 border-b border-neutral-800">
+        <button
+          v-for="t in tabs"
+          :key="t"
+          @click="activeTab = t"
+          class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+          :class="activeTab === t ? 'border-brand-accent text-brand-accent' : 'border-transparent text-brand-muted hover:text-brand-text'"
+        >
+          {{ t }}
+        </button>
+      </div>
 
-    <div class="flex flex-wrap gap-2 mb-8 border-b border-gray-200">
-      <button
-        v-for="t in tabs"
-        :key="t"
-        @click="activeTab = t"
-        class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
-        :class="activeTab === t ? 'border-black text-black' : 'border-transparent text-gray-400 hover:text-gray-600'"
-      >
-        {{ t }}
-      </button>
-    </div>
-
-    <!-- CATEGORIES -->
-    <section v-if="activeTab === 'Categories'">
-      <form @submit.prevent="createCategory" class="grid sm:grid-cols-4 gap-2 mb-6">
-        <input v-model="newCategory.name" placeholder="Name" required class="border rounded px-3 py-2 text-sm" />
-        <input v-model="newCategory.description" placeholder="Description" class="border rounded px-3 py-2 text-sm" />
-        <div class="space-y-1">
-          <label class="block w-full cursor-pointer">
-            <span class="sr-only">Upload category image</span>
-            <div class="w-full text-left border rounded px-3 py-2 text-sm bg-white hover:bg-gray-50">
-              {{ categoryFileName || "Select category image" }}
-            </div>
+      <!-- CATEGORIES -->
+      <section v-if="activeTab === 'Categories'">
+        <form @submit.prevent="createCategory" class="grid sm:grid-cols-4 gap-2 mb-6">
+          <input v-model="newCategory.name" placeholder="Name" required class="bg-brand-surface border border-neutral-800 text-brand-text placeholder:text-neutral-500 rounded px-3 py-2 text-sm focus:outline-none focus:border-brand-accent" />
+          <input v-model="newCategory.description" placeholder="Description" class="bg-brand-surface border border-neutral-800 text-brand-text placeholder:text-neutral-500 rounded px-3 py-2 text-sm focus:outline-none focus:border-brand-accent" />
+          <div class="space-y-1">
+            <label class="block w-full cursor-pointer">
+              <span class="sr-only">Upload category image</span>
+              <div class="w-full text-left border border-neutral-800 rounded px-3 py-2 text-sm bg-brand-surface text-brand-text hover:bg-neutral-800">
+                {{ categoryFileName || "Select category image" }}
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                @change="handleImageUpload($event, 'category')"
+                class="hidden"
+              />
+            </label>
             <input
-              type="file"
-              accept="image/*"
-              @change="handleImageUpload($event, 'category')"
-              class="hidden"
+              v-model="newCategory.imageUrl"
+              placeholder="Image URL"
+              readonly
+              class="border border-neutral-800 rounded px-3 py-2 text-sm w-full bg-neutral-900 text-brand-muted"
             />
-          </label>
-          <input
-            v-model="newCategory.imageUrl"
-            placeholder="Image URL"
-            readonly
-            class="border rounded px-3 py-2 text-sm w-full bg-gray-50"
-          />
-          <p class="text-xs text-gray-500" v-if="uploadStatus.category">{{ uploadStatus.category }}</p>
+            <p class="text-xs text-brand-muted" v-if="uploadStatus.category">{{ uploadStatus.category }}</p>
+          </div>
+          <button class="bg-brand-accent text-black font-semibold rounded px-4 py-2 text-sm hover:bg-brand-accentDark transition-colors">Add Category</button>
+        </form>
+        <div class="space-y-2">
+          <div v-for="c in categories" :key="c._id" class="flex items-center justify-between bg-brand-surface border border-neutral-800 rounded px-4 py-2 text-sm text-brand-text">
+            <span>{{ c.name }}</span>
+            <button @click="deleteCategory(c._id)" class="text-red-400 text-xs hover:text-red-300">Delete</button>
+          </div>
         </div>
-        <button class="bg-black text-white rounded px-4 py-2 text-sm">Add Category</button>
-      </form>
-      <div class="space-y-2">
-        <div v-for="c in categories" :key="c._id" class="flex items-center justify-between border rounded px-4 py-2 text-sm">
-          <span>{{ c.name }}</span>
-          <button @click="deleteCategory(c._id)" class="text-red-600 text-xs">Delete</button>
-        </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- PRODUCTS (no price / stock fields) -->
-    <section v-if="activeTab === 'Products'">
-      <form @submit.prevent="createProduct" class="grid sm:grid-cols-2 gap-2 mb-6">
-        <input v-model="newProduct.name" placeholder="Product name" required class="border rounded px-3 py-2 text-sm" />
-        <select v-model="newProduct.category" class="border rounded px-3 py-2 text-sm">
-          <option value="">No category</option>
-          <option v-for="c in categories" :key="c._id" :value="c._id">{{ c.name }}</option>
-        </select>
-        <textarea v-model="newProduct.description" placeholder="Detail / description" class="border rounded px-3 py-2 text-sm sm:col-span-2" rows="2"></textarea>
-        <div class="space-y-1 sm:col-span-2">
-          <label class="block w-full cursor-pointer">
-            <span class="sr-only">Upload product image</span>
-            <div class="w-full text-left border rounded px-3 py-2 text-sm bg-white hover:bg-gray-50">
-              {{ productFileName || "Select product image" }}
-            </div>
-            <input
-              type="file"
-              accept="image/*"
-              @change="handleImageUpload($event, 'product')"
-              class="hidden"
-            />
-          </label>
-          <input
-            v-model="newProduct.imageUrl"
-            placeholder="Image URL"
-            readonly
-            class="border rounded px-3 py-2 text-sm w-full bg-gray-50"
-          />
-          <p class="text-xs text-gray-500" v-if="uploadStatus.product">{{ uploadStatus.product }}</p>
-        </div>
-        <button class="bg-black text-white rounded px-4 py-2 text-sm sm:col-span-2">Add Product</button>
-      </form>
-      <div class="space-y-2">
-        <div v-for="p in products" :key="p._id" class="flex items-center justify-between border rounded px-4 py-2 text-sm">
-          <span>{{ p.name }}</span>
-          <button @click="deleteProduct(p._id)" class="text-red-600 text-xs">Delete</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- QUICK LINKS -->
-    <section v-if="activeTab === 'Quick Links'">
-      <form @submit.prevent="createLink" class="grid sm:grid-cols-3 gap-2 mb-6">
-        <input v-model="newLink.title" placeholder="Title" required class="border rounded px-3 py-2 text-sm" />
-        <input v-model="newLink.url" placeholder="URL" required class="border rounded px-3 py-2 text-sm" />
-        <button class="bg-black text-white rounded px-4 py-2 text-sm">Add Link</button>
-      </form>
-      <div class="space-y-2">
-        <div v-for="l in links" :key="l._id" class="flex items-center justify-between border rounded px-4 py-2 text-sm">
-          <span>{{ l.title }} — {{ l.url }}</span>
-          <button @click="deleteLink(l._id)" class="text-red-600 text-xs">Delete</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- BANK ACCOUNTS -->
-    <section v-if="activeTab === 'Bank Accounts'">
-      <form @submit.prevent="createAccount" class="grid sm:grid-cols-3 gap-2 mb-6">
-        <input v-model="newAccount.bankName" placeholder="Bank name" required class="border rounded px-3 py-2 text-sm" />
-        <input v-model="newAccount.accountTitle" placeholder="Account title" class="border rounded px-3 py-2 text-sm" />
-        <input v-model="newAccount.accountNumber" placeholder="Account number" class="border rounded px-3 py-2 text-sm" />
-        <input v-model="newAccount.iban" placeholder="IBAN" class="border rounded px-3 py-2 text-sm" />
-        <input v-model="newAccount.branch" placeholder="Branch" class="border rounded px-3 py-2 text-sm" />
-        <button class="bg-black text-white rounded px-4 py-2 text-sm">Add Account</button>
-      </form>
-      <div class="space-y-2">
-        <div v-for="a in accounts" :key="a._id" class="flex items-center justify-between border rounded px-4 py-2 text-sm">
-          <span>{{ a.bankName }} — {{ a.accountNumber }}</span>
-          <button @click="deleteAccount(a._id)" class="text-red-600 text-xs">Delete</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- SITE SETTINGS -->
-    <section v-if="activeTab === 'Settings'" style="position: relative; z-index: 10000; pointer-events: auto;">
-      <div class="grid sm:grid-cols-2 gap-2 max-w-lg" style="position: relative; z-index: 10000; pointer-events: auto;">
-        <input v-model="settings.whatsappNumber" placeholder="WhatsApp number (e.g. +923411535353)" class="border rounded px-3 py-2 text-sm sm:col-span-2" />
-        <input v-model="settings.companyName" placeholder="Company name" class="border rounded px-3 py-2 text-sm sm:col-span-2" />
-        <button type="button" @click="saveSettings" @mousedown.capture="saveSettings" style="position: relative; z-index: 10001; pointer-events: auto;" class="bg-black text-white rounded px-4 py-2 border-2 border-red-500 text-sm sm:col-span-2">Save Settings</button>
-      </div>
-    </section>
-
-    <!-- ORDERS -->
-    <section v-if="activeTab === 'Orders'">
-      <div class="space-y-2">
-        <div v-for="o in orders" :key="o._id" class="flex items-center justify-between border rounded px-4 py-2 text-sm">
-          <span class="font-mono">{{ o.trackingId }}</span>
-          <select :value="o.status" @change="updateStatus(o.trackingId, $event.target.value)" class="border rounded px-2 py-1 text-xs">
-            <option value="pending">Pending</option>
-            <option value="processing">Processing</option>
-            <option value="customization">Customization</option>
-            <option value="with_courier">With Courier</option>
-            <option value="delivered">Delivered</option>
+      <!-- PRODUCTS (no price / stock fields) -->
+      <section v-if="activeTab === 'Products'">
+        <form @submit.prevent="createProduct" class="grid sm:grid-cols-2 gap-2 mb-6">
+          <input v-model="newProduct.name" placeholder="Product name" required class="bg-brand-surface border border-neutral-800 text-brand-text placeholder:text-neutral-500 rounded px-3 py-2 text-sm focus:outline-none focus:border-brand-accent" />
+          <select v-model="newProduct.category" class="bg-brand-surface border border-neutral-800 text-brand-text rounded px-3 py-2 text-sm focus:outline-none focus:border-brand-accent">
+            <option value="">No category</option>
+            <option v-for="c in categories" :key="c._id" :value="c._id">{{ c.name }}</option>
           </select>
+          <textarea v-model="newProduct.description" placeholder="Detail / description" class="bg-brand-surface border border-neutral-800 text-brand-text placeholder:text-neutral-500 rounded px-3 py-2 text-sm sm:col-span-2 focus:outline-none focus:border-brand-accent" rows="2"></textarea>
+          <div class="space-y-1 sm:col-span-2">
+            <label class="block w-full cursor-pointer">
+              <span class="sr-only">Upload product image</span>
+              <div class="w-full text-left border border-neutral-800 rounded px-3 py-2 text-sm bg-brand-surface text-brand-text hover:bg-neutral-800">
+                {{ productFileName || "Select product image" }}
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                @change="handleImageUpload($event, 'product')"
+                class="hidden"
+              />
+            </label>
+            <input
+              v-model="newProduct.imageUrl"
+              placeholder="Image URL"
+              readonly
+              class="border border-neutral-800 rounded px-3 py-2 text-sm w-full bg-neutral-900 text-brand-muted"
+            />
+            <p class="text-xs text-brand-muted" v-if="uploadStatus.product">{{ uploadStatus.product }}</p>
+          </div>
+          <button class="bg-brand-accent text-black font-semibold rounded px-4 py-2 text-sm sm:col-span-2 hover:bg-brand-accentDark transition-colors">Add Product</button>
+        </form>
+        <div class="space-y-2">
+          <div v-for="p in products" :key="p._id" class="flex items-center justify-between bg-brand-surface border border-neutral-800 rounded px-4 py-2 text-sm text-brand-text">
+            <span>{{ p.name }}</span>
+            <button @click="deleteProduct(p._id)" class="text-red-400 text-xs hover:text-red-300">Delete</button>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <!-- QUICK LINKS -->
+      <section v-if="activeTab === 'Quick Links'">
+        <form @submit.prevent="createLink" class="grid sm:grid-cols-3 gap-2 mb-6">
+          <input v-model="newLink.title" placeholder="Title" required class="bg-brand-surface border border-neutral-800 text-brand-text placeholder:text-neutral-500 rounded px-3 py-2 text-sm focus:outline-none focus:border-brand-accent" />
+          <input v-model="newLink.url" placeholder="URL" required class="bg-brand-surface border border-neutral-800 text-brand-text placeholder:text-neutral-500 rounded px-3 py-2 text-sm focus:outline-none focus:border-brand-accent" />
+          <button class="bg-brand-accent text-black font-semibold rounded px-4 py-2 text-sm hover:bg-brand-accentDark transition-colors">Add Link</button>
+        </form>
+        <div class="space-y-2">
+          <div v-for="l in links" :key="l._id" class="flex items-center justify-between bg-brand-surface border border-neutral-800 rounded px-4 py-2 text-sm text-brand-text">
+            <span>{{ l.title }} — {{ l.url }}</span>
+            <button @click="deleteLink(l._id)" class="text-red-400 text-xs hover:text-red-300">Delete</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- BANK ACCOUNTS -->
+      <section v-if="activeTab === 'Bank Accounts'">
+        <form @submit.prevent="createAccount" class="grid sm:grid-cols-3 gap-2 mb-6">
+          <input v-model="newAccount.bankName" placeholder="Bank name" required class="bg-brand-surface border border-neutral-800 text-brand-text placeholder:text-neutral-500 rounded px-3 py-2 text-sm focus:outline-none focus:border-brand-accent" />
+          <input v-model="newAccount.accountTitle" placeholder="Account title" class="bg-brand-surface border border-neutral-800 text-brand-text placeholder:text-neutral-500 rounded px-3 py-2 text-sm focus:outline-none focus:border-brand-accent" />
+          <input v-model="newAccount.accountNumber" placeholder="Account number" class="bg-brand-surface border border-neutral-800 text-brand-text placeholder:text-neutral-500 rounded px-3 py-2 text-sm focus:outline-none focus:border-brand-accent" />
+          <input v-model="newAccount.iban" placeholder="IBAN" class="bg-brand-surface border border-neutral-800 text-brand-text placeholder:text-neutral-500 rounded px-3 py-2 text-sm focus:outline-none focus:border-brand-accent" />
+          <input v-model="newAccount.branch" placeholder="Branch" class="bg-brand-surface border border-neutral-800 text-brand-text placeholder:text-neutral-500 rounded px-3 py-2 text-sm focus:outline-none focus:border-brand-accent" />
+          <button class="bg-brand-accent text-black font-semibold rounded px-4 py-2 text-sm hover:bg-brand-accentDark transition-colors">Add Account</button>
+        </form>
+        <div class="space-y-2">
+          <div v-for="a in accounts" :key="a._id" class="flex items-center justify-between bg-brand-surface border border-neutral-800 rounded px-4 py-2 text-sm text-brand-text">
+            <span>{{ a.bankName }} — {{ a.accountNumber }}</span>
+            <button @click="deleteAccount(a._id)" class="text-red-400 text-xs hover:text-red-300">Delete</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SITE SETTINGS -->
+      <section v-if="activeTab === 'Settings'" style="position: relative; z-index: 10000; pointer-events: auto;">
+        <div class="grid sm:grid-cols-2 gap-2 max-w-lg" style="position: relative; z-index: 10000; pointer-events: auto;">
+          <input v-model="settings.whatsappNumber" placeholder="WhatsApp number (e.g. +923411535353)" class="bg-brand-surface border border-neutral-800 text-brand-text placeholder:text-neutral-500 rounded px-3 py-2 text-sm sm:col-span-2 focus:outline-none focus:border-brand-accent" />
+          <input v-model="settings.companyName" placeholder="Company name" class="bg-brand-surface border border-neutral-800 text-brand-text placeholder:text-neutral-500 rounded px-3 py-2 text-sm sm:col-span-2 focus:outline-none focus:border-brand-accent" />
+          <button type="button" @click="saveSettings" @mousedown.capture="saveSettings" style="position: relative; z-index: 10001; pointer-events: auto;" class="bg-brand-accent text-black font-semibold rounded px-4 py-2 border-2 border-red-500 text-sm sm:col-span-2 hover:bg-brand-accentDark transition-colors">Save Settings</button>
+        </div>
+      </section>
+
+      <!-- ORDERS -->
+      <section v-if="activeTab === 'Orders'">
+        <div class="space-y-2">
+          <div v-for="o in orders" :key="o._id" class="flex items-center justify-between bg-brand-surface border border-neutral-800 rounded px-4 py-2 text-sm text-brand-text">
+            <span class="font-mono">{{ o.trackingId }}</span>
+            <select :value="o.status" @change="updateStatus(o.trackingId, $event.target.value)" class="bg-neutral-900 border border-neutral-800 text-brand-text rounded px-2 py-1 text-xs focus:outline-none focus:border-brand-accent">
+              <option value="pending">Pending</option>
+              <option value="processing">Processing</option>
+              <option value="customization">Customization</option>
+              <option value="with_courier">With Courier</option>
+              <option value="delivered">Delivered</option>
+            </select>
+          </div>
+        </div>
+      </section>
+    </div>
   </div>
 </template>
 

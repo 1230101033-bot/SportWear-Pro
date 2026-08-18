@@ -10,13 +10,20 @@
         <span>💬</span>
         <span class="text-sm sm:text-base font-medium">{{ whatsappNumber }}</span>
       </a>
-      <span class="font-heading font-bold text-lg sm:text-xl text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-400">
+      <span class="font-heading font-bold text-lg sm:text-xl text-transparent bg-clip-text" style="background-image: linear-gradient(to right, #4d518a, #e27647); -webkit-background-clip: text; background-clip: text;">
         {{ brandName }}
       </span>
     </div>
 
     <!-- Content -->
     <div class="flex-1 px-4 sm:px-8 py-8 sm:py-12 max-w-4xl mx-auto w-full">
+      <router-link
+        to="/"
+        class="inline-flex items-center gap-1.5 bg-gray-50 border border-gray-200 text-sm text-gray-700 hover:border-green-500 hover:text-green-600 px-4 py-2 rounded-full mb-8 transition-colors"
+      >
+        ← Back to Home
+      </router-link>
+
       <div class="text-center mb-10">
         <h1 class="font-heading text-2xl sm:text-3xl font-bold tracking-wide text-black inline-block border-b-2 border-black pb-1 mb-3">
           PAYMENT METHOD
@@ -74,7 +81,7 @@
             <div class="divide-y divide-gray-50">
               <div class="flex items-center justify-between px-5 py-3">
                 <div>
-                  <p class="text-[11px] uppercase tracking-wider text-gray-400 font-medium">Account Title</p>
+                  <p class="text-[11px] uppercase tracking-wider text-white font-medium">Account Title</p>
                   <p class="text-sm font-semibold mt-0.5">{{ acc.accountTitle }}</p>
                 </div>
                 <button @click="copyText(acc.accountTitle, acc._id + '-title')" class="text-gray-300 hover:text-gray-600 transition-colors">
@@ -83,7 +90,7 @@
               </div>
               <div class="flex items-center justify-between px-5 py-3">
                 <div>
-                  <p class="text-[11px] uppercase tracking-wider text-gray-400 font-medium">Account Number</p>
+                  <p class="text-[11px] uppercase tracking-wider text-white font-medium">Account Number</p>
                   <p class="text-sm font-semibold mt-0.5">{{ acc.accountNumber }}</p>
                 </div>
                 <button @click="copyText(acc.accountNumber, acc._id + '-num')" class="text-gray-300 hover:text-gray-600 transition-colors">
@@ -92,7 +99,7 @@
               </div>
               <div v-if="acc.iban" class="flex items-center justify-between px-5 py-3">
                 <div>
-                  <p class="text-[11px] uppercase tracking-wider text-gray-400 font-medium">IBAN</p>
+                  <p class="text-[11px] uppercase tracking-wider text-white font-medium">IBAN</p>
                   <p class="text-sm font-semibold mt-0.5 font-mono">{{ acc.iban }}</p>
                 </div>
                 <button @click="copyText(acc.iban, acc._id + '-iban')" class="text-gray-300 hover:text-gray-600 transition-colors">
@@ -120,8 +127,8 @@
     </div>
 
     <!-- Footer Bar -->
-    <div class="bg-gradient-to-r from-green-600 to-yellow-400 px-4 sm:px-6 py-3 flex items-center justify-between mt-auto">
-      <span class="font-heading font-bold text-lg sm:text-xl text-yellow-300">{{ brandName }}</span>
+    <div class="bg-black px-4 sm:px-6 py-3 flex items-center justify-between mt-auto">
+      <span class="font-heading font-bold text-lg sm:text-xl text-transparent bg-clip-text" style="background-image: linear-gradient(to right, #4d518a, #e27647); -webkit-background-clip: text; background-clip: text;">{{ brandName }}</span>
       <a :href="whatsappLink" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-white">
         <span>💬</span>
         <span class="text-sm sm:text-base font-medium">{{ whatsappNumber }}</span>
@@ -152,7 +159,7 @@ const trackingId = ref(null);
 const placeError = ref(null);
 
 const whatsappNumber = computed(() => settings.value?.whatsappNumber || "+92 341 153 5353");
-const brandName = computed(() => settings.value?.companyName || "SportWear Pro");
+const brandName = computed(() => settings.value?.companyName || "LeahSport");
 const whatsappLink = computed(() => `https://wa.me/${whatsappNumber.value.replace(/[^0-9]/g, "")}`);
 
 function copyText(text, id) {
